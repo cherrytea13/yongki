@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f5f0e8" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; connect-src 'none'; upgrade-insecure-requests"
+    />
+    <meta
+      http-equiv="Permissions-Policy"
+      content="interest-cohort=(), microphone=(), camera=(), geolocation=(), payment=()"
+    />
+    <title>용키 — 용돈키우기</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="top-bar">
+        <div class="top-brand">
+          <img class="top-brand__logo" src="yonki logo.png" alt="용키 로고" />
+          <h1 class="logo">용키 : 나만의 용돈키우기</h1>
+        </div>
+      </header>
+
+      <main class="main" id="main">
+        <!-- 홈 -->
+        <section class="panel panel--home" id="panel-home" hidden>
+          <h2 class="panel__title">홈</h2>
+          <div class="home-tiles">
+            <article class="home-tile home-tile--progress" id="home-tile-progress">
+              <div class="home-arc-wrap">
+                <span class="home-arc-emoji" id="home-arc-emoji" aria-hidden="true">🎁</span>
+                <p class="home-arc-title" id="home-arc-title"></p>
+                <div class="home-arc-graph">
+                  <svg class="home-arc-svg" viewBox="0 0 800 456" aria-hidden="true">
+                    <path
+                      class="home-arc-track"
+                      d="M 96 432 A 304 304 0 0 1 704 432"
+                      fill="none"
+                      stroke-width="40"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      id="home-arc-fill"
+                      class="home-arc-fill"
+                      d="M 96 432 A 304 304 0 0 1 704 432"
+                      fill="none"
+                      stroke-width="40"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                  <div class="home-arc-inner">
+                    <p class="home-arc-line home-arc-line--label" id="home-arc-label"></p>
+                    <p class="home-arc-line home-arc-line--amt" id="home-arc-amounts"></p>
+                    <p class="home-arc-line home-arc-line--pct" id="home-arc-pct"></p>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="home-tile home-tile--oneline">
+              <h3 class="home-tile__heading">용키의 한 마디</h3>
+              <div class="home-oneline-body">
+                <span class="home-oneline-bulb" aria-hidden="true">💡</span>
+                <p class="home-tile__text" id="home-oneline-text"></p>
+              </div>
+            </article>
+
+            <article class="home-tile home-tile--analysis">
+              <h3 class="home-tile__heading">소비 분석</h3>
+              <p class="home-mood-empty" id="home-mood-empty" hidden>아직 구매 판단 기록이 없어요.</p>
+              <div class="home-mood-bar" id="home-mood-bar" role="img" aria-label="소비 분석 필요·욕구 비율"></div>
+              <div class="home-mood-legend" id="home-mood-legend"></div>
+            </article>
+          </div>
+        </section>
+
+        <!-- 목표 -->
+        <section class="panel panel--goal" id="panel-goal">
+          <h2 class="panel__title">목표</h2>
+          <p class="panel__lead" id="goal-setup-intro">물건을 사기 위해 모을 돈을 정해 보세요.</p>
+
+          <form class="goal-form" id="goal-form" autocomplete="off">
+            <label class="field">
+              <span class="field__label">사고 싶은 것</span>
+              <input
+                class="field__input"
+                type="text"
+                id="goal-name"
+                name="itemName"
+                placeholder="예: 레고 세트"
+                maxlength="40"
+              />
+            </label>
+            <div class="field">
+              <span class="field__label">홈 화면에 보일 이모지</span>
+              <div class="goal-emoji-picker" id="goal-emoji-picker-form" role="group" aria-label="목표 이모지 선택"></div>
+            </div>
+            <label class="field">
+              <span class="field__label">모아야 하는 돈 (원)</span>
+              <input class="field__input" type="number" id="goal-target" name="targetAmount" min="1" step="1" inputmode="numeric" placeholder="예: 30000" />
+            </label>
+            <label class="field">
+              <span class="field__label">지금 가진 돈 (원)</span>
+              <input class="field__input" type="number" id="goal-start" name="startAmount" step="1" inputmode="numeric" placeholder="0" />
+            </label>
+            <button type="submit" class="btn btn--primary">목표 저장하기</button>
+          </form>
+
+          <div class="divider" id="goal-setup-divider">또는</div>
+
+          <button type="button" class="btn btn--ghost" id="btn-free-mode">자유 기록하기</button>
+          <p class="hint" id="goal-setup-hint">목표 없이 기록만 하고 싶을 때 골라요.</p>
+
+          <div class="active-goal" id="active-goal" hidden>
+            <p class="active-goal__badge">진행 중인 목표</p>
+            <p class="active-goal__name" id="active-goal-name"></p>
+            <p class="active-goal__nums" id="active-goal-nums"></p>
+            <div class="field field--tight">
+              <span class="field__label">홈 화면 이모지</span>
+              <div class="goal-emoji-picker" id="goal-emoji-picker-active" role="group" aria-label="홈에 표시할 이모지"></div>
+            </div>
+            <button type="button" class="btn btn--primary" id="btn-goal-done">완료하고 서랍에 넣기</button>
+          </div>
+
+          <div class="active-free" id="active-free" hidden>
+            <p class="active-goal__badge">자유 기록 모드</p>
+            <p class="active-goal__nums" id="active-free-balance"></p>
+            <p class="panel__lead">기입장에서 수입·지출을 남길 수 있어요.</p>
+            <button type="button" class="btn btn--primary" id="btn-free-done">완료하고 서랍에 넣기</button>
+          </div>
+        </section>
+
+        <!-- 기입장 -->
+        <section class="panel panel--ledger" id="panel-ledger" hidden>
+          <h2 class="panel__title">기입장</h2>
+          <p class="ledger-balance-line" id="ledger-balance-line" aria-live="polite"></p>
+
+            <div class="ledger-ticket" id="ledger-ticket">
+            <div class="ledger-ticket__perforation" aria-hidden="true"></div>
+            <p class="ledger-ticket__label ledger-ticket__label--new" id="ledger-ticket-label">🎫 새 티켓</p>
+            <button type="button" class="btn btn--ghost ledger-edit-cancel" id="ledger-edit-cancel" hidden>
+              수정 취소
+            </button>
+
+            <p class="ledger-ticket-remain" id="ledger-ticket-remain" aria-live="polite"></p>
+
+            <div class="ledger-dots" id="ledger-dots" role="tablist" aria-label="입력 단계">
+              <span class="ledger-dot ledger-dot--active" data-dot="0"></span>
+              <span class="ledger-dot" data-dot="1"></span>
+              <span class="ledger-dot" data-dot="2"></span>
+            </div>
+
+            <div class="ledger-viewport" id="ledger-viewport">
+              <div class="ledger-track" id="ledger-track">
+                <!-- 1단계: 날짜·유형 -->
+                <div class="ledger-slide" data-step="0">
+                  <p class="ledger-slide__hint">언제였나요?</p>
+                  <button type="button" class="ledger-date-btn" id="ledger-date-btn" aria-haspopup="dialog"></button>
+                  <p class="ledger-slide__hint ledger-slide__hint--spaced">무슨 일이에요?</p>
+                  <div class="ledger-type-grid">
+                    <button type="button" class="ledger-type-btn" data-type="income" aria-pressed="false">
+                      <span class="ledger-type-btn__icon">💰</span>
+                      <span class="ledger-type-btn__text">벌었어요</span>
+                      <span class="ledger-type-btn__sub">수입</span>
+                    </button>
+                    <button type="button" class="ledger-type-btn" data-type="expense" aria-pressed="false">
+                      <span class="ledger-type-btn__icon">💸</span>
+                      <span class="ledger-type-btn__text">썼어요</span>
+                      <span class="ledger-type-btn__sub">지출</span>
+                    </button>
+                  </div>
+                  <button type="button" class="btn btn--primary ledger-next" id="ledger-next-1" disabled>다음</button>
+                </div>
+
+                <!-- 2단계: 내용 -->
+                <div class="ledger-slide" data-step="1">
+                  <p class="ledger-slide__hint" id="ledger-step2-hint">무엇에 썼나요 / 어떻게 벌었나요?</p>
+                  <label class="ledger-field">
+                    <span class="visually-hidden">내용</span>
+                    <input
+                      type="text"
+                      class="ledger-memo-input"
+                      id="ledger-memo"
+                      maxlength="60"
+                      placeholder="예: 문구점에서 스티커"
+                      autocomplete="off"
+                    />
+                  </label>
+                  <div class="ledger-keywords" id="ledger-keywords" aria-label="자주 쓰는 말"></div>
+                  <div class="ledger-slide-actions">
+                    <button type="button" class="btn btn--secondary" id="ledger-back-2">이전</button>
+                    <button type="button" class="btn btn--primary" id="ledger-next-2" disabled>다음</button>
+                  </div>
+                </div>
+
+                <!-- 3단계: 금액·구매 판단 -->
+                <div class="ledger-slide" data-step="2">
+                  <p class="ledger-slide__hint">금액을 눌러 넣어요</p>
+                  <div class="ledger-amount-display" id="ledger-amount-display" aria-live="polite">0원</div>
+                  <div class="ledger-numpad" id="ledger-numpad" aria-label="숫자 패드"></div>
+                  <div class="ledger-mood-block" id="ledger-mood-block">
+                    <p class="ledger-slide__hint ledger-slide__hint--spaced">어떤 것을 샀나요?</p>
+                    <div class="ledger-mood-row" role="group" aria-label="구매 후 판단">
+                      <button type="button" class="ledger-mood" data-mood="nec" aria-pressed="false" title="필요한 것">
+                        <span class="ledger-mood__face">✅</span>
+                        <span class="ledger-mood__cap">필요한 것</span>
+                      </button>
+                      <button type="button" class="ledger-mood" data-mood="des" aria-pressed="false" title="갖고 싶던 것">
+                        <span class="ledger-mood__face">✨</span>
+                        <span class="ledger-mood__cap">갖고 싶던 것</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="ledger-slide-actions">
+                    <button type="button" class="btn btn--secondary" id="ledger-back-3">이전</button>
+                    <button type="button" class="btn btn--primary" id="ledger-save" disabled>저장하기</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ledger-recent-wrap" id="ledger-recent-wrap">
+            <div class="ledger-recent-head">
+              <h3 class="ledger-section-title ledger-recent-title">최근 티켓</h3>
+              <div class="ledger-view-toggle" role="group" aria-label="최근 티켓 보기 모드">
+                <button type="button" class="ledger-view-btn ledger-view-btn--on" data-ledger-view="list">
+                  목록
+                </button>
+                <button type="button" class="ledger-view-btn" data-ledger-view="ledger">기입장</button>
+                <button type="button" class="ledger-view-btn" data-ledger-view="calendar">달력</button>
+              </div>
+            </div>
+
+            <div class="ledger-view-panels">
+              <div class="ledger-view-panel" id="ledger-view-panel-list">
+                <ul class="ledger-list" id="ledger-list"></ul>
+              </div>
+              <div class="ledger-view-panel" id="ledger-view-panel-table" hidden>
+                <div class="ledger-table-scroll">
+                  <table class="ledger-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">날짜</th>
+                        <th scope="col">내용</th>
+                        <th scope="col" class="ledger-table__num">들어온 돈</th>
+                        <th scope="col" class="ledger-table__num">나간 돈</th>
+                        <th scope="col" class="ledger-table__num">남은 돈</th>
+                      </tr>
+                    </thead>
+                    <tbody id="ledger-table-body"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="ledger-view-panel" id="ledger-view-panel-calendar" hidden>
+                <div class="ledger-cal-toolbar">
+                  <button type="button" class="ledger-cal-navbtn" id="ledger-cal-prev" aria-label="이전 달">
+                    ‹
+                  </button>
+                  <span class="ledger-cal-month" id="ledger-cal-month-label"></span>
+                  <button type="button" class="ledger-cal-navbtn" id="ledger-cal-next" aria-label="다음 달">
+                    ›
+                  </button>
+                </div>
+                <div class="ledger-cal-weekdays" aria-hidden="true">
+                  <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+                </div>
+                <div class="ledger-cal-grid" id="ledger-cal-grid"></div>
+              </div>
+            </div>
+            <p class="ledger-empty" id="ledger-empty">아직 저장된 티켓이 없어요. 위에서 한 장 적어볼까요?</p>
+          </div>
+        </section>
+
+        <!-- 서랍 -->
+        <section class="panel panel--drawer" id="panel-drawer" hidden>
+          <header class="drawer-panel-head">
+            <h2 class="panel__title">서랍</h2>
+            <button type="button" class="btn btn--ghost btn-hard-reset" id="btn-hard-reset" aria-label="앱 데이터 전체 초기화">
+              초기화
+            </button>
+          </header>
+          <p class="panel__lead">끝낸 기입장은 통장으로 보관돼요. 언제든 꺼내 볼 수 있어요.</p>
+
+          <div class="drawer-desk">
+            <div class="drawer-summary card card--drawer">
+              <p class="drawer-summary__title" id="drawer-day-title">기록 0일 차</p>
+              <div class="drawer-summary__stats">
+                <div class="drawer-stat">
+                  <span class="drawer-stat__val" id="drawer-archive-count">0</span>
+                  <span class="drawer-stat__cap">보관한 통장</span>
+                </div>
+                <div class="drawer-stat">
+                  <span class="drawer-stat__val" id="drawer-badge-count">0</span>
+                  <span class="drawer-stat__cap">획득 뱃지</span>
+                </div>
+              </div>
+              <p class="drawer-badges-label">뱃지 진열장</p>
+              <div class="drawer-badge-grid" id="drawer-badge-grid" aria-label="뱃지 진열장"></div>
+            </div>
+
+            <h3 class="drawer-section-title">기입장 아카이브</h3>
+            <div class="drawer-archives" id="drawer-archives"></div>
+            <p class="drawer-archives-empty" id="drawer-archives-empty">아직 서랍에 통장이 없어요. 목표를 달성하거나 자유 기록을 완료하면 여기 쌓여요.</p>
+          </div>
+        </section>
+      </main>
+
+      <nav class="tab-bar" aria-label="주요 메뉴">
+        <button type="button" class="tab tab--active" data-tab="home" aria-current="page">
+          <span class="tab__icon" aria-hidden="true">🏠</span>
+          <span class="tab__label">홈</span>
+        </button>
+        <button type="button" class="tab" data-tab="ledger">
+          <span class="tab__icon" aria-hidden="true">📒</span>
+          <span class="tab__label">기입장</span>
+        </button>
+        <button type="button" class="tab" data-tab="goal">
+          <span class="tab__icon" aria-hidden="true">🎯</span>
+          <span class="tab__label">목표</span>
+        </button>
+        <button type="button" class="tab" data-tab="drawer">
+          <span class="tab__icon" aria-hidden="true">🗄️</span>
+          <span class="tab__label">서랍</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- 시작금액 > 목표금액 팝업 -->
+    <div class="modal-root" id="modal-overlap" hidden>
+      <div class="modal-backdrop"></div>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-overlap-title">
+        <h3 class="modal__title" id="modal-overlap-title">알림</h3>
+        <p class="modal__body">
+          가지고 있는 돈이 목표 금액보다 더 많네요. 이 목표만을 위해 돈을 모으겠다는 의미로, 시작 가격을 0원으로 정할까요?
+        </p>
+        <div class="modal__actions">
+          <button type="button" class="btn btn--secondary btn--emphasis" id="modal-overlap-no">아뇨, 목표 금액을 다시 정할게요</button>
+          <button type="button" class="btn btn--primary" id="modal-overlap-yes">네</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 목표 미설정 알림 -->
+    <div class="modal-root" id="modal-redirect" hidden>
+      <div class="modal-backdrop"></div>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-redirect-title">
+        <h3 class="modal__title" id="modal-redirect-title">안내</h3>
+        <p class="modal__body">목표를 설정하지 않았습니다! 목표 탭으로 이동합니다.</p>
+        <div class="modal__actions modal__actions--single">
+          <button type="button" class="btn btn--primary" id="modal-redirect-ok">확인</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 자유 모드 확인 -->
+    <div class="modal-root" id="modal-free" hidden>
+      <div class="modal-backdrop" data-close-modal></div>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-free-title">
+        <h3 class="modal__title" id="modal-free-title">자유 기록 모드</h3>
+        <p class="modal__body">목표 없이 기록만 시작할까요? 나중에 목표 탭에서 다시 바꿀 수 있어요.</p>
+        <label class="field modal-free-balance-field" for="modal-free-balance">
+          <span class="field__label">지금 가진 돈 (원)</span>
+          <input
+            class="field__input"
+            type="number"
+            id="modal-free-balance"
+            name="freeBalance"
+            step="1"
+            inputmode="numeric"
+            placeholder="0"
+            autocomplete="off"
+          />
+        </label>
+        <div class="modal__actions">
+          <button type="button" class="btn btn--secondary btn--emphasis" id="modal-free-cancel">취소</button>
+          <button type="button" class="btn btn--primary" id="modal-free-ok">시작하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 달력 -->
+    <div class="modal-root" id="modal-calendar" hidden>
+      <div class="modal-backdrop" data-close-calendar></div>
+      <div class="modal modal--calendar" role="dialog" aria-modal="true" aria-labelledby="calendar-title">
+        <div class="calendar-head">
+          <button type="button" class="calendar-nav" id="calendar-prev" aria-label="이전 달">‹</button>
+          <h3 class="calendar-title" id="calendar-title">2026년 4월</h3>
+          <button type="button" class="calendar-nav" id="calendar-next" aria-label="다음 달">›</button>
+        </div>
+        <div class="calendar-weekdays" aria-hidden="true">
+          <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+        </div>
+        <div class="calendar-grid" id="calendar-grid"></div>
+        <button type="button" class="btn btn--secondary" data-close-calendar>닫기</button>
+      </div>
+    </div>
+
+    <!-- 목표 달성 축하 · 이어 쓰기 / 서랍 보관 선택 -->
+    <div class="modal-root" id="modal-goal-celebrate" hidden>
+      <div class="modal-backdrop"></div>
+      <div class="modal modal--celebrate" role="dialog" aria-modal="true" aria-labelledby="modal-celebrate-title">
+        <p class="modal-celebrate__emoji" aria-hidden="true">🎉</p>
+        <h3 class="modal__title" id="modal-celebrate-title">축하합니다!</h3>
+        <p class="modal__body" id="modal-celebrate-body">
+          목표를 달성했어요! 계속 기록하시겠어요, 아니면 성공으로 마무리하고 서랍에 보관할까요?
+        </p>
+        <div class="modal__actions">
+          <button type="button" class="btn btn--secondary btn--emphasis" id="modal-goal-celebrate-continue">
+            계속 기록하기
+          </button>
+          <button type="button" class="btn btn--primary" id="modal-goal-celebrate-archive">서랍에 보관하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 목표·자유 기록 → 서랍 보관 확인 -->
+    <div class="modal-root" id="modal-free-archive" hidden>
+      <div class="modal-backdrop"></div>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-free-archive-title">
+        <h3 class="modal__title" id="modal-free-archive-title">서랍에 넣을까요?</h3>
+        <p class="modal__body">지금까지 적은 티켓을 통장으로 묶어 서랍에 보관해요. 이후에는 새로 기록을 시작하게 돼요.</p>
+        <div class="modal__actions">
+          <button type="button" class="btn btn--secondary btn--emphasis" id="modal-free-archive-no">아니오, 계속 쓸게요</button>
+          <button type="button" class="btn btn--primary" id="modal-free-archive-yes">네, 서랍에 넣기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 뱃지 상세 (획득한 뱃지만) -->
+    <div class="modal-root" id="modal-badge-detail" hidden>
+      <div class="modal-backdrop" data-close-badge-detail></div>
+      <div class="modal modal--badge-detail" role="dialog" aria-modal="true" aria-labelledby="badge-detail-name">
+        <div class="badge-detail__imgwrap">
+          <img class="badge-detail__img" id="badge-detail-img" src="" alt="" width="112" height="112" loading="lazy" decoding="async" />
+        </div>
+        <p class="badge-detail__category" id="badge-detail-category"></p>
+        <h3 class="modal__title" id="badge-detail-name">뱃지</h3>
+        <div class="badge-detail__block">
+          <p class="badge-detail__label">획득 조건</p>
+          <p class="badge-detail__body" id="badge-detail-trigger"></p>
+        </div>
+        <div class="badge-detail__block">
+          <p class="badge-detail__label">교육적 가치</p>
+          <p class="badge-detail__body" id="badge-detail-insight"></p>
+        </div>
+        <button type="button" class="btn btn--primary" data-close-badge-detail>확인</button>
+      </div>
+    </div>
+
+    <!-- 아카이브 통장 상세 (읽기 전용) -->
+    <div class="modal-root" id="modal-archive-detail" hidden>
+      <div class="modal-backdrop" data-close-archive-detail></div>
+      <div class="modal modal--archive-detail" role="dialog" aria-modal="true" aria-labelledby="archive-detail-title">
+        <h3 class="modal__title" id="archive-detail-title">통장 보기</h3>
+        <p class="archive-detail__meta" id="archive-detail-meta"></p>
+        <ul class="archive-detail__list" id="archive-detail-list"></ul>
+        <div class="modal-archive-detail__actions">
+          <button type="button" class="btn btn--secondary" data-close-archive-detail>닫기</button>
+          <button type="button" class="btn btn--danger-outline" id="archive-detail-delete">삭제하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 아카이브 통장 삭제 확인 -->
+    <div class="modal-root" id="modal-archive-delete-confirm" hidden>
+      <div class="modal-backdrop" data-close-modal></div>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-archive-delete-title">
+        <h3 class="modal__title" id="modal-archive-delete-title">통장 삭제</h3>
+        <p class="modal__body">정말 삭제하시겠습니까?</p>
+        <div class="modal__actions">
+          <button type="button" class="btn btn--secondary btn--emphasis" id="modal-archive-delete-no">아니오</button>
+          <button type="button" class="btn btn--danger" id="modal-archive-delete-yes">네</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 하드 리셋 1단계 -->
+    <div class="modal-root" id="modal-hard-reset-1" hidden>
+      <div class="modal-backdrop" data-close-modal></div>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-hard-reset-1-title">
+        <h3 class="modal__title" id="modal-hard-reset-1-title">전체 초기화</h3>
+        <p class="modal__body">
+          정말로 초기화하시겠습니까? 기록한 모든 기입장과 뱃지가 초기화됩니다.
+        </p>
+        <div class="modal__actions">
+          <button type="button" class="btn btn--secondary btn--emphasis" id="modal-hard-reset-1-no">아니오</button>
+          <button type="button" class="btn btn--danger" id="modal-hard-reset-1-yes">네</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 하드 리셋 2단계 -->
+    <div class="modal-root" id="modal-hard-reset-2" hidden>
+      <div class="modal-backdrop" data-close-modal></div>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-hard-reset-2-title">
+        <h3 class="modal__title" id="modal-hard-reset-2-title">전체 초기화</h3>
+        <p class="modal__body">초기화 후 되돌릴 수 없습니다.</p>
+        <div class="modal__actions">
+          <button type="button" class="btn btn--secondary btn--emphasis" id="modal-hard-reset-2-no">아니오</button>
+          <button type="button" class="btn btn--danger" id="modal-hard-reset-2-yes">네</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
