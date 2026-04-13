@@ -418,6 +418,9 @@
   /** @type {string | null} */
   var archiveDetailOpenId = null;
 
+  /** @type {string | null} */
+  var pendingDeleteLedgerEntryId = null;
+
   /** @param {string} archiveId */
   function deleteArchiveById(archiveId) {
     if (!archiveId) return;
@@ -941,6 +944,9 @@
     modalArchiveDeleteConfirm: document.getElementById("modal-archive-delete-confirm"),
     modalArchiveDeleteNo: document.getElementById("modal-archive-delete-no"),
     modalArchiveDeleteYes: document.getElementById("modal-archive-delete-yes"),
+    modalLedgerEntryDelete: document.getElementById("modal-ledger-entry-delete"),
+    modalLedgerEntryDeleteNo: document.getElementById("modal-ledger-entry-delete-no"),
+    modalLedgerEntryDeleteYes: document.getElementById("modal-ledger-entry-delete-yes"),
     btnFreeDone: document.getElementById("btn-free-done"),
   };
 
@@ -1453,6 +1459,55 @@
     }
   }
 
+  /** @param {string} id */
+  function openLedgerEntryDeleteConfirm(id) {
+    if (!id) return;
+    var list = loadEntries();
+    var found = false;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === id) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) return;
+    pendingDeleteLedgerEntryId = id;
+    vibrate(10);
+    openModal(els.modalLedgerEntryDelete);
+  }
+
+  /** @param {string} id */
+  function deleteLedgerEntryById(id) {
+    if (!id) return;
+    var list = loadEntries();
+    var idx = -1;
+    var entry = null;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === id) {
+        idx = i;
+        entry = list[i];
+        break;
+      }
+    }
+    if (idx < 0 || !entry) return;
+    var w = getWallet() - walletDeltaForEntry(entry);
+    setWallet(w);
+    list.splice(idx, 1);
+    saveEntries(list);
+    if (ledgerEditingId === id) {
+      resetLedgerWizard();
+    }
+    clearLedgerRowSelection();
+    refreshGoalUI();
+    refreshLedgerChrome();
+    if (syncBadges() > 0) {
+      vibrate([25, 45, 25]);
+    } else {
+      vibrate(12);
+    }
+    refreshLedgerRecentSection();
+  }
+
   function updateStep1Next() {
     els.ledgerNext1.disabled = ledgerType === null;
   }
@@ -1785,7 +1840,10 @@
           '<div class="ledger-row__mood">' +
           escapeHtml(moodEmoji(e.mood)) +
           "</div>" +
-          '<button type="button" class="ledger-row__edit">수정</button>';
+          '<div class="ledger-row__actions">' +
+          '<button type="button" class="ledger-row__delete">삭제</button>' +
+          '<button type="button" class="ledger-row__edit">수정</button>' +
+          "</div>";
         li.classList.add("ledger-row--clickable");
         li.tabIndex = 0;
         li.setAttribute(
@@ -1794,13 +1852,14 @@
             ", " +
             formatWon(e.amount) +
             (afterNum !== null ? ", 기록 후 " + formatWon(afterNum) : "") +
-            ". 눌러 선택 후 수정 버튼을 누르세요."
+            ". 눌러 선택 후 삭제 또는 수정 버튼을 누르세요."
         );
         (function (entryId, rowEl) {
           var editBtn = rowEl.querySelector(".ledger-row__edit");
+          var delBtn = rowEl.querySelector(".ledger-row__delete");
           rowEl.addEventListener("click", function (ev) {
             var t = ev.target;
-            if (t && t.closest && t.closest(".ledger-row__edit")) return;
+            if (t && t.closest && (t.closest(".ledger-row__edit") || t.closest(".ledger-row__delete"))) return;
             vibrate(10);
             activateLedgerRow(rowEl);
           });
@@ -1819,6 +1878,14 @@
               }, 0);
             }
           });
+          if (delBtn) {
+            delBtn.setAttribute("aria-label", "이 티켓 삭제");
+            delBtn.addEventListener("click", function (ev) {
+              ev.stopPropagation();
+              ev.preventDefault();
+              openLedgerEntryDeleteConfirm(entryId);
+            });
+          }
           if (editBtn) {
             editBtn.setAttribute("aria-label", "이 티켓 수정");
             editBtn.addEventListener("click", function (ev) {
@@ -2504,6 +2571,23 @@
       vibrate(12);
       closeModal(els.modalArchiveDeleteConfirm);
       deleteArchiveById(id);
+    });
+  }
+
+  if (els.modalLedgerEntryDeleteNo) {
+    els.modalLedgerEntryDeleteNo.addEventListener("click", function () {
+      pendingDeleteLedgerEntryId = null;
+      closeModal(els.modalLedgerEntryDelete);
+    });
+  }
+
+  if (els.modalLedgerEntryDeleteYes) {
+    els.modalLedgerEntryDeleteYes.addEventListener("click", function () {
+      var id = pendingDeleteLedgerEntryId;
+      pendingDeleteLedgerEntryId = null;
+      closeModal(els.modalLedgerEntryDelete);
+      if (!id) return;
+      deleteLedgerEntryById(id);
     });
   }
 

@@ -432,6 +432,19 @@
       </div>
     </div>
 
+    <!-- 기입장 티켓 삭제 확인 -->
+    <div class="modal-root" id="modal-ledger-entry-delete" hidden>
+      <div class="modal-backdrop"></div>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-ledger-entry-delete-title">
+        <h3 class="modal__title" id="modal-ledger-entry-delete-title">티켓 삭제</h3>
+        <p class="modal__body">이 티켓을 삭제할까요? 삭제하면 복구할 수 없어요.</p>
+        <div class="modal__actions">
+          <button type="button" class="btn btn--secondary btn--emphasis" id="modal-ledger-entry-delete-no">아니오, 유지할게요</button>
+          <button type="button" class="btn btn--danger" id="modal-ledger-entry-delete-yes">네, 삭제하기</button>
+        </div>
+      </div>
+    </div>
+
     <!-- 뱃지 상세 (획득한 뱃지만) -->
     <div class="modal-root" id="modal-badge-detail" hidden>
       <div class="modal-backdrop" data-close-badge-detail></div>

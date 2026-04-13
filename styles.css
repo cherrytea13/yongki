@@ -1202,20 +1202,14 @@ body {
   font-weight: 600;
 }
 
-.ledger-row__edit {
+.ledger-row__actions {
   position: absolute;
   right: 10px;
   bottom: 8px;
-  padding: 6px 14px;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  color: var(--accent-dark);
-  background: #fff;
-  border: 2px solid var(--accent);
-  border-radius: 999px;
-  cursor: pointer;
-  touch-action: manipulation;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -1224,14 +1218,40 @@ body {
     visibility 0.2s ease;
 }
 
-.ledger-row--active .ledger-row__edit {
+.ledger-row--active .ledger-row__actions {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
 }
 
+.ledger-row__edit,
+.ledger-row__delete {
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  background: #fff;
+  border-radius: 999px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.ledger-row__edit {
+  color: var(--accent-dark);
+  border: 2px solid var(--accent);
+}
+
+.ledger-row__delete {
+  color: #5c5854;
+  border: 2px solid #9a9590;
+}
+
 .ledger-row__edit:hover {
   background: rgba(224, 122, 95, 0.12);
+}
+
+.ledger-row__delete:hover {
+  background: rgba(92, 88, 84, 0.1);
 }
 
 .ledger-row__edit:focus {
@@ -1239,7 +1259,13 @@ body {
   outline-offset: 2px;
 }
 
-.ledger-row__edit:focus:not(:focus-visible) {
+.ledger-row__delete:focus {
+  outline: 2px solid #9a9590;
+  outline-offset: 2px;
+}
+
+.ledger-row__edit:focus:not(:focus-visible),
+.ledger-row__delete:focus:not(:focus-visible) {
   outline: none;
 }
 
